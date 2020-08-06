@@ -27,7 +27,7 @@ else:
     print("\033[1;31;40mNo setting file detected.\033[0m")
     print("\033[1;31;40mPlease complete your settings by following the guide.\033[0m ")
     settings["target_path_default"] = input("\033[1;36;40mThe base path to save your file (absolute linux path):\033[0m \n")
-    settings["jekyll_path_default"] = input("\033[1;36;40mThe base path to write in your jekyll article (relative web path):\033[0m \n") 
+    settings["jekyll_path_default"] = input("\033[1;36;40mThe base path to write in your jekyll article (web path):\033[0m \n") 
     if not settings["target_path_default"].endswith('/'):
         settings["target_path_default"] += '/'
     if not settings["jekyll_path_default"].endswith('/'):
