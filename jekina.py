@@ -82,9 +82,9 @@ args = argument_parser.parse_args()
 
 # 添加路径模式
 if args.add_path_mode:
-    add_path_id = input("Please input the name of the path: \n")
-    add_path_wsl = input("Enter your wsl base path of \"" + add_path_id + "\": \n")
-    add_path_jek = input("Enter your jekyll base path of \"" + add_path_id + "\": \n")
+    add_path_id = input("\033[1;36;40mPlease input the name of the path: \033[0m\n")
+    add_path_wsl = input("\033[1;36;40mEnter your wsl base path of \"" + add_path_id + "\": \033[0m \n")
+    add_path_jek = input("\033[1;36;40mEnter your jekyll base path of \"" + add_path_id + "\": \033[0m \n")
     # 尾部修正
     if not add_path_wsl.endswith("/"):
         add_path_wsl += "/"
@@ -112,7 +112,7 @@ else:
 
 # 循环输入
 while True:
-    user_input = input("User input: ")
+    user_input = input("\033[1;36;40mjekina>> \033[0m")
     user_input_split = user_input.split()
 
     # 判断是否为自定义模式
