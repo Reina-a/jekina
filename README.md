@@ -24,7 +24,7 @@ WSL版本需要的准备工作:
 
 切换到jekina所在的文件夹下, 直接运行脚本`./jekina.py`即可
 
-初次运行会生成settings.json配置文件, 请根据引导完成配置
+初次运行会生成`settings.json`配置文件, 请根据引导完成配置
 
 ![初始化配置](http://reina.link/assets/images/2020-08-06/init.png)
 
@@ -58,16 +58,16 @@ optional arguments:
 
 README无法添加视频, 演示视频请移步[丽奈的技术栈-jekina文档](http://reina.link/posts/jekina-readme/)
 
-
 ## 三、 功能完善计划
 
 - 添加路径选择, 增强归档能力
 - 添加文章搜索功能, 快速获取站内文章链接
+- 添加轻量上传功能, 轻松更新站点
 - Windows版本开发
 - ...
 
 ## 四、 联系作者
 
-如果您有好的想法或者建议, 可以在Issues中与我交流
+如果您有好的想法或者建议, 欢迎在`Issues`中与我交流
 
 邮箱当然也可以: reinaxxxa@gmail.com
