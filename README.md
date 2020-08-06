@@ -133,4 +133,4 @@ File has been copied!
 
 如果您有好的想法或者建议, 欢迎在`Issues`中与我交流
 
-邮箱当然也可以: reinaxxxa@gmail.com
+邮箱当然也可以: reinaxxxxa@gmail.com
