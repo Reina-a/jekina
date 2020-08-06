@@ -60,9 +60,10 @@ if enable_date_subfolder:
     tar_wslpath_base += (formated_time + '/')
     jekpath_base += (formated_time + '/')
 
+
 # 检查目标路径是否存在, 若不存在则创建
 if not os.path.exists(tar_wslpath_base):
-    os.makedirs(jekpath_base)
+    os.makedirs(tar_wslpath_base)
 
 # 解析命令行参数
 desc =  'Move files to your jekyll hub, and provide the url you need for your site (print & clipboard)'
