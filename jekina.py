@@ -11,6 +11,7 @@ import path_convertor as pc
 import json
 
 
+
 is_first_setting = False
 
 if not os.path.exists('./settings.json'):
@@ -50,6 +51,9 @@ else:
 tar_wslpath_base = settings["target_path_default"]
 jekpath_base = settings["jekyll_path_default"]
 enable_date_subfolder = settings["enable_date_subfolder"]
+custom_paths = {}
+if "custom_paths" in settings.keys():
+    custom_paths = settings["custom_paths"]
 
 
 # 按照日期归档 (可选功能)
@@ -72,9 +76,29 @@ argument_parser.add_argument('-c','--disable-copy-path', dest='disable_copy_path
                             help='do not copy jekyll paths to the clipboard')
 argument_parser.add_argument('-r','--disable-rename', dest='disable_rename', action='store_true',
                             help='do not rename the file')
+argument_parser.add_argument('-a','--add-path', dest='add_path_mode', action='store_true',
+                            help='add custom paths')                      
 args = argument_parser.parse_args()
 
-# 显示模式
+# 添加路径模式
+if args.add_path_mode:
+    add_path_id = input("Please input the name of the path: \n")
+    add_path_wsl = input("Enter your wsl base path of \"" + add_path_id + "\": \n")
+    add_path_jek = input("Enter your jekyll base path of \"" + add_path_id + "\": \n")
+    # 尾部修正
+    if not add_path_wsl.endswith("/"):
+        add_path_wsl += "/"
+    if not add_path_jek.endswith("/"):
+        add_path_jek += "/"        
+    # 写入设置字典
+    custom_paths[add_path_id] = (add_path_wsl, add_path_jek)
+    settings["custom_paths"] = custom_paths
+    # 写入配置文件
+    with open('settings.json', 'w', encoding='utf-8') as settings_file:
+        json.dump(settings, settings_file, indent=4, ensure_ascii=False)
+
+
+# 显示当前模式
 if not args.disable_copy_path:
     print("- clipboard:\tenabled")
 else:
@@ -89,7 +113,25 @@ else:
 # 循环输入
 while True:
     user_input = input("User input: ")
-    
+    user_input_split = user_input.split()
+
+    # 判断是否为自定义模式
+    if len(user_input_split) == 2:
+        for path_name in custom_paths.keys():
+            if path_name == user_input_split[0]:
+                # 更改路径
+                tar_wslpath_base = custom_paths[path_name][0]
+                jekpath_base = custom_paths[path_name][1]
+                # 按照日期归档 (可选功能)
+                if enable_date_subfolder:
+                    # 获取当前日期并格式化
+                    formated_time = time.strftime("%Y-%m-%d", time.localtime())
+                    # 根据格式化的日期完善路径
+                    tar_wslpath_base += (formated_time + '/')
+                    jekpath_base += (formated_time + '/')
+                # 修正输入
+                user_input = user_input_split[1]
+                
     # 程序出口
     if user_input == 'quit':
         break
@@ -169,5 +211,7 @@ while True:
             print("\033[1;32;40mJekyll path has been copied to the clipboard! \033[0m")
 
         # 复制文件到目标路径
+        if not os.path.exists(tar_wslpath_base):
+            os.makedirs(tar_wslpath_base)
         shutil.copy(src_wslpath, tar_wslpath)
         print("\033[1;32;40mFile has been copied! \033[0m\n")
