@@ -44,7 +44,7 @@ else:
         else:
             pass
     with open('settings.json', 'w', encoding='utf-8') as settings_file:
-        json.dump(settings, settings_file)
+        json.dump(settings, settings_file, indent=4, ensure_ascii=False)
 
 # 提取配置文件
 tar_wslpath_base = settings["target_path_default"]
@@ -96,7 +96,7 @@ while True:
     # 从剪切板保存
     elif user_input == 'clip':
         # 检查剪切板
-        check_command = r"echo .\\\\clipboard.ps1 -c | $POWERSHELL >> /dev/null"
+        check_command = r"echo .\\\\clipboard.ps1 -c | /mnt/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe >> /dev/null"
         ret = os.system(check_command)
         
         # 如果powershell脚本正常返回 (剪切板上有图片)
@@ -117,7 +117,7 @@ while True:
 
             # 调用WSL命令, 以调用PowerShell脚本(从剪切板中获取并保存图片)
             command_url = tar_winpath.replace('\\','\\\\\\\\')
-            command_save = r'echo .\\\\clipboard.ps1 -s ' + command_url + r' | $POWERSHELL >> /dev/null'
+            command_save = r'echo .\\\\clipboard.ps1 -s ' + command_url + r' | /mnt/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe >> /dev/null'
             os.system(command_save)
             print("\033[1;32;40mPicture on the clipboard has been saved!\033[0m")
 
