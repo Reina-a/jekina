@@ -1,12 +1,9 @@
-# jekina
+# jekina (on wsl)
 ## 一、 简介
 
 jekina是以方便jekyll博客撰写为目的开发的实用脚本工具
 
-当前支持的功能有:
-
-- 拖动添加文件、生成文章所需链接
-- 从剪切板快速添加图片、生成文章所需链接
+功能介绍视频请前往[我的博客](/posts/jekina-readme/index.html)
 
 ## 二、 安装
 
@@ -20,117 +17,75 @@ WSL版本需要的准备工作:
 
 准备好环境后, 将仓库的所有文件下载到任意文件夹中即可
 
-## 三、 使用
+## 三、 配置
 
 切换到jekina所在的文件夹下, 直接运行脚本`./jekina.py`即可
 
 初次运行会生成`settings.json`配置文件, 请根据引导完成配置
 
-![初始化配置](http://reina.link/assets/images/2020-08-06/init.png)
+配置文件对于jekina来说至关重要, 请确保配置文件中路径的正确性
 
-jekina支持命令行参数, 使用`./jekina.py -h`即可查看帮助信息, 例如: 
-
-```
-usage: jekina.py [-h] [-c] [-r]
-
-Move files to your jekyll hub, and provide the url you need for your site
-(print & clipboard)
-
-optional arguments:
-  -h, --help            show this help message and exit
-  -c, --disable-copy-path
-                        do not copy jekyll paths to the clipboard
-  -r, --disable-rename  do not rename the file
-  -a, --add-path        add custom paths
-```
-
-在运行jekina后, 会根据用户的命令行选项显示当前的模式 
-
-![显示模式](http://reina.link/assets/images/2020-08-06/0806-094946.png)
-
-`User input`是最主要的输入, 它可以是以下几种情况
-
-- "quit": 退出程序
-- "clip": 实现从剪切板添加图片的功能
-- {Windows路径}: 实现拖动添加文件的功能(拖动文件可以自动输入其Windows路径)
-- {自定义路径名称} {User input}: 将路径切换至自定义路径 
-
-
-### 功能演示
-
-README无法添加视频, 演示视频请移步[丽奈的技术栈-jekina文档](http://reina.link/posts/jekina-readme/)
-
-## 三、 功能完善计划
-
-- 添加路径选择, 增强归档能力(已实现)
-- 添加文章搜索功能, 快速获取站内文章链接
-- 添加轻量上传功能, 轻松更新站点
-- Windows版本开发
-- ...
-
-## 四、 更新日志
-
-### 2020-08-06
-
-- 新增: 自定义路径功能
-
-**添加自定义路径**
-
-加入命令行参数`-a`、`--add-path`以提供自定义路径功能, 以下是help信息:
-
-```
--a, --add-path        add custom paths
-```
-
-使用这个命令行参数, 会在正常工作之前引导您添加一个自定义路径(作为默认路径的拓展)
-
-一个例子:
-
-```
-$ ./jekina.py -a
-Please input the name of the path:
-audio
-Enter your wsl base path of "audio":
-/mnt/c/Users/Reina/OneDrive/Chirpy/assets/audio
-Enter your jekyll base path of "audio":
-/assets/audio
-```
-
-自定义的路径会写到`settings.json`文件中, 如果添加路径名称重复则会覆盖原有路径, 可以从这个文件中删除已有设置
-
-一个例子(json文件节选):
+下面是一个样例:
 
 ```json
-"custom_paths": {
-	"file": [
-	    "/mnt/c/Users/Reina/OneDrive/Chirpy/assets/files/",
-	    "/assets/files/"
-	],
-	"audio": [
-	    "/mnt/c/Users/Reina/OneDrive/Chirpy/assets/audio/",
-	    "/assets/audio/"
-	]
+{
+    "jekyll_home": "/mnt/c/Users/Reina/OneDrive/Chirpy/",
+    "asset_paths": {
+        "image": "assets/images/",
+        "file": "assets/files/",
+        "audio": "assets/audio/",
+        "video": "assets/video/"
+    },
+    "site_home": "_site/",
+    "post_path": "posts/"
 }
 ```
 
-**使用自定义路径**
+- `jekyll_home`保存了jekyll项目的绝对路径(是后面相对路径的基础)
+- `asset_paths`保存了各个路径的信息, 文章所需的图片(文件)就保存在这些路径中
+- `site_home`保存了生成网站的目录(关于`jekyll_home`的相对路径)
+- `post_path`保存了网站中文章页面的保存路径(关于`site_home`的相对路径)
 
-如果想使用自定义的路径, 将自定义路径名写在开头、使用空格分开, 即可从默认路径切换至自定义路径
+默认生成`image`的路径, 其他路径通过选用命令行参数`-a`, 根据提示添加
 
-一个例子(audio是自定义路径的名称):
+## 四、 使用
 
-```
-User input: audio C:\Users\Reina\Desktop\record2.avi
-New filename: test.avi
-/assets/audio/2020-08-06/test.avi
-Jekyll path has been copied to the clipboard!
-File has been copied!
-```
+jekina支持命令行参数, 可以使用`./jekina.py -h`即可查看帮助信息
 
-同样也可以使用"clip"输入, 这里省略
+可以使用的命令行参数有:
 
-## 五、 联系作者
+- -h/--help: 显示帮助信息并退出
+- -c/--disable-copy-path: 生成的路径不拷贝到剪切板
+- -r/--disable-rename: 跳过重命名步骤
+- -a/--add-path: 添加一个路径
+
+正常进入程序后会出现jekina的命令行提示符
+
+![prompt](/assets/images/2020-08-08/0808-125433.png)
+
+可以使用的命令有:
+
+- {Windows路径}: 实现拖动添加文件的功能(拖动文件可以自动输入其Windows路径)
+- "clip": 从剪切板中添加图片
+- "cd {路径名称}": 切换至指定路径
+- "ls" : 查看当前路径下的文件
+- "rm {需要删除的内容}" : 删除当前目录下指定文件(支持通配符)
+- "pwd": 查看当前路径 
+- "oie": 在Windows资源管理器中打开当前路径(open in explorer)
+- "find {关键词}": 根据关键词查找已有文章(查找文件名), 生成文章所需的url 
+- "sps" : 查看所有可用路径
+- "quit": 退出程序
+
+
+## 五、 功能完善计划
+
+- 添加路径选择, 增强归档能力(已实现)
+- 添加文章搜索功能, 快速获取站内文章链接(已实现)
+- Windows版本开发
+- ...
+
+## 六、 联系作者
 
 如果您有好的想法或者建议, 欢迎在`Issues`中与我交流
 
-邮箱当然也可以: reinaxxxxa@gmail.com
+邮箱当然也可以: reinaxxxa@gmail.com
