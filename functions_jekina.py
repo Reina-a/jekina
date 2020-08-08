@@ -10,11 +10,15 @@ import shutil
 powershell_path = "/mnt/c/Windows/System32/WindowsPowerShell/v1.0/powershell.exe"
 explorer_path = "/mnt/c/Windows/explorer.exe"
 
-def search_articles(site_base_path: str, site_post_path: str, search_string: str) -> list:
+def search_articles(settings: dict, search_string: str) -> list:
+    jekyll_home = settings["jekyll_home"]
+    site_home = settings["site_home"]
+    post_path = settings["post_path"]
+
     post_urls= []
-    for root, ___, files in os.walk(site_base_path + site_post_path):
+    for root, ___, files in os.walk(jekyll_home + site_home + post_path):
         for filename in files:
-            post_urls.append(os.path.join(root, filename)[(len(site_base_path) - 1):])
+            post_urls.append(os.path.join(root, filename)[(len(jekyll_home + site_home) - 1):])
     regex = ".*" + search_string + ".*"
     regex_c = re.compile(regex)
     find_urls = []
@@ -23,6 +27,7 @@ def search_articles(site_base_path: str, site_post_path: str, search_string: str
             print(url)
             find_urls.append(url)
     return find_urls
+
 
 def parse_argument():
     # 解析命令行参数
@@ -37,59 +42,67 @@ def parse_argument():
     args = argument_parser.parse_args()
     return args
 
+
 def add_custom_path(settings: dict) -> dict:
+    # 引导输入
     add_path_id = input("\033[1;36;40mPlease input the name of the path: \033[0m\n")
-    add_path_wsl = input("\033[1;36;40mEnter your wsl base path of \"" + add_path_id + "\": \033[0m \n")
-    add_path_jek = input("\033[1;36;40mEnter your jekyll base path of \"" + add_path_id + "\": \033[0m \n")
+    add_path = input("\033[1;36;40mEnter your path of \"" + add_path_id + "\" based on jekyll home: \033[0m \n")
     # 尾部修正
-    if not add_path_wsl.endswith("/"):
-        add_path_wsl += "/"
-    if not add_path_jek.endswith("/"):
-        add_path_jek += "/"        
+    if not add_path.endswith("/"):
+        add_path += "/"    
     # 写入设置字典
-    if not "custom_paths" in settings.keys():
-        settings["custom_paths"]  = {}
-    settings["custom_paths"][add_path_id] = (add_path_wsl, add_path_jek)
+    settings["asset_paths"][add_path_id] = add_path
     # 写入配置文件
     with open('settings.json', 'w', encoding='utf-8') as settings_file:
         json.dump(settings, settings_file, indent=4, ensure_ascii=False)
     return settings
+
 
 def initialize() -> dict:
 
     # 初始化配置文件
     settings = {}
     
+    # 引导用户输入
     print("\033[1;31;40mNo setting file detected.\033[0m")
     print("\033[1;31;40mPlease complete your settings by following the guide.\033[0m ")
-    settings["target_path_default"] = input("\033[1;36;40mThe base path to save your file (absolute linux path):\033[0m \ne.g. /mnt/c/Users/Reina/OneDrive/Chirpy/assets/images/\n")
-    settings["jekyll_path_default"] = input("\033[1;36;40mThe base path to write in your jekyll article (web path):\033[0m \ne.g /assets/images/\n")
-    settings["site_base_path"] = input("\033[1;36;40mThe absolute path of your site: (absolute linux path):\033[0m \ne.g. /mnt/c/Users/Reina/OneDrive/Chirpy/_site/\n")
-    settings["site_post_path"] = input("\033[1;36;40mThe relative path you store your post pages: (relative linux path):\033[0m \ne.g. posts/\n")
-    # 末尾纠正
-    for key in settings.keys():
-        if not settings[key].endswith("/"):
-             settings[key] += "/"
     
-    while True:
-        choice = input("\033[1;36;40mDo you want to put the file in a subfolder with a formatted date? (yes/no):\033[0m ").lower()
-        if choice in ['yes', 'ye', 'y', 'yeah']:
-            settings["enable_date_subfolder"] = True
-            break
-        elif choice in ['no', 'n', 'not']:
-            settings["enable_date_subfolder"] = False
-            break
-        else:
-            pass
+    settings["jekyll_home"] = input("\033[1;36;40mYour jekyll home (absolute linux path):\033[0m \ne.g. /mnt/c/Users/Reina/OneDrive/Chirpy/\n")
+    settings["asset_paths"]={}
+    settings["asset_paths"]["image"] = input("\033[1;36;40mThe image asset path based on jekyll home (relative):\033[0m \ne.g assets/images/\n")
+    settings["site_home"] = input("\033[1;36;40mThe path of your site based on jekyll home: (relative):\033[0m \ne.g. _site/\n")
+    settings["post_path"] = input("\033[1;36;40mThe path of your post pages based on site home: (relative):\033[0m \ne.g. posts/\n")
+    
+    # 末尾纠正
+    if not settings["jekyll_home"].endswith("/"):
+        settings["jekyll_home"] += '/'
+    if not settings["asset_paths"]["image"].endswith("/"):
+        settings["asset_paths"]["image"] += '/'
+    if not settings["site_home"].endswith("/"):
+        settings["site_home"] += '/'
+    if not settings["post_path"].endswith("/"):
+        settings["post_path"] += '/'
+    
     with open('settings.json', 'w', encoding='utf-8') as settings_file:
         json.dump(settings, settings_file, indent=4, ensure_ascii=False)
     return settings
 
-def save_from_clip(tar_wslpath_base: str, jekpath_base: str, args):
+
+def save_from_clip(curr_path_id: str, settings: dict, args, formated_time: str):
+    tar_wslpath_base =settings["jekyll_home"] + settings["asset_paths"][curr_path_id]
+    jekpath_base = '/' + settings["asset_paths"][curr_path_id]
+    # tar_wslpath_base: str, jekpath_base: str, args
+    
+    tar_wslpath_base += (formated_time + '/')
+    jekpath_base += (formated_time + '/')
+
     # 检查剪切板
     check_command = r"echo .\\\\clipboard.ps1 -c | " + powershell_path +  r" >> /dev/null"
     ret = os.system(check_command)
     
+    if not os.path.exists(tar_wslpath_base):
+        os.makedirs(tar_wslpath_base)
+
     # 如果powershell脚本正常返回 (剪切板上有图片)
     if ret == 0:
         # 为路径补充文件名 (根据命令行参数选择重命名或不重命名)
@@ -122,8 +135,15 @@ def save_from_clip(tar_wslpath_base: str, jekpath_base: str, args):
     else:
         print("\033[1;31;40mError occurred, please check your clipboard (Image Supported Only)\033[0m\n")
 
-def save_from_winpath(tar_wslpath_base: str, jekpath_base: str, args, winpath: str):
-    src_winpath = winpath
+
+def save_from_winpath(src_winpath: str, curr_path_id: str ,settings: dict, args, formated_time: str):
+
+    tar_wslpath_base = settings["jekyll_home"] + settings["asset_paths"][curr_path_id]
+    jekpath_base = '/' + settings["asset_paths"][curr_path_id]
+
+    tar_wslpath_base += (formated_time + '/')
+    jekpath_base += (formated_time + '/')
+
     # 将得到的windows路径转化为相应的wsl路径
     src_wslpath, filename = pc.abs_win2wsl(src_winpath, pc.FILE_MODE)
 
@@ -137,7 +157,7 @@ def save_from_winpath(tar_wslpath_base: str, jekpath_base: str, args, winpath: s
     # 检查文件是否存在, 不存在则报错
     if not os.path.exists(src_wslpath):
         print("\033[1;31;40mFile not exists, please check your input. \033[0m")
-        print("\033[1;31;40mIt is re    commended to drag the file into the terminal directly. \033[0m\n")
+        print("\033[1;31;40mIt is recommended to drag the file into the terminal directly. \033[0m\n")
         return
 
     # 为路径补充文件名
@@ -163,46 +183,22 @@ def save_from_winpath(tar_wslpath_base: str, jekpath_base: str, args, winpath: s
     shutil.copy(src_wslpath, tar_wslpath)
     print("\033[1;32;40mFile has been copied! \033[0m\n")
 
-def open_in_explorer(tar_wslpath_base: str):
-    tar_winpath_oie, ___ = pc.abs_wsl2win(tar_wslpath_base, pc.FOLDER_MODE)
+
+def open_in_explorer(curr_path: str):
+    if not os.path.exists(curr_path):
+        os.makedirs(curr_path)
+    tar_winpath_oie, ___ = pc.abs_wsl2win(curr_path, pc.FOLDER_MODE)
     tar_winpath_oie = tar_winpath_oie.replace('\\','\\\\') 
     if tar_winpath_oie:
         command_oie = explorer_path + " " + tar_winpath_oie 
         os.system(command_oie)
 
 def change_directory(user_input_split: list, settings: dict):
-    custom_paths = {}
-    
-    tar_wslpath_base = None
-    jekpath_base = None
-    curr_path_name = None
-
-    if "custom_paths" in settings.keys():
-        custom_paths = settings["custom_paths"]
-    for path_name in custom_paths.keys():
+    curr_path_id = None
+    asset_paths = settings["asset_paths"]
+    for path_name in asset_paths.keys():
         if path_name == user_input_split[1]:
             # 更改路径
-            tar_wslpath_base = custom_paths[path_name][0]
-            jekpath_base = custom_paths[path_name][1]
-            curr_path_name = path_name
-            # 按照日期归档 (可选功能)
-            if settings["enable_date_subfolder"]:
-                # 获取当前日期并格式化
-                formated_time = time.strftime("%Y-%m-%d", time.localtime())
-                # 根据格式化的日期完善路径
-                tar_wslpath_base += (formated_time + '/')
-                jekpath_base += (formated_time + '/')
-            # 进入下一个输入
+            curr_path_id = path_name
             break
-    if user_input_split[1] == "default":
-        tar_wslpath_base = settings["target_path_default"]
-        jekpath_base = settings["jekyll_path_default"]
-        curr_path_name = "default"
-        if settings["enable_date_subfolder"]:
-            # 获取当前日期并格式化
-            formated_time = time.strftime("%Y-%m-%d", time.localtime())
-            # 根据格式化的日期完善路径
-            tar_wslpath_base += (formated_time + '/')
-            jekpath_base += (formated_time + '/')
-
-    return tar_wslpath_base, jekpath_base, curr_path_name
+    return curr_path_id

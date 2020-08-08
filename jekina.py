@@ -20,40 +20,29 @@ if os.path.exists('./settings.json'):
         settings = json.load(settings_file)
 else:
     settings = func.initialize()
+formated_time = time.strftime("%Y-%m-%d", time.localtime())
 
 # 添加路径
 if args.add_path_mode:
     settings = func.add_custom_path(settings)
+    exit(0)
 
 # 提取配置
-tar_wslpath_base_default = settings["target_path_default"]
-jekpath_base_default = settings["jekyll_path_default"]
-enable_date_subfolder = settings["enable_date_subfolder"]
-site_base_path = settings["site_base_path"]
-site_post_path = settings["site_post_path"]
+jekyll_home = settings["jekyll_home"]
+asset_paths = settings["asset_paths"]
+site_home = settings["site_home"]
+post_path = settings["post_path"]
 
 # 初始化路径信息
-tar_wslpath_base = tar_wslpath_base_default
-jekpath_base = jekpath_base_default
-curr_path_name = "default"
-
-# 按照日期归档 (可选功能)
-if enable_date_subfolder:
-    # 获取当前日期并格式化
-    formated_time = time.strftime("%Y-%m-%d", time.localtime())
-    # 根据格式化的日期完善路径
-    tar_wslpath_base += (formated_time + '/')
-    jekpath_base += (formated_time + '/')
-
-# 检查目标路径是否存在, 若不存在则创建
-if not os.path.exists(tar_wslpath_base):
-    os.makedirs(tar_wslpath_base)
+curr_path = jekyll_home + asset_paths["image"] + formated_time + '/'
+jek_path = '/' + asset_paths["image"] + formated_time + '/'
+curr_path_id = "image"
 
 
 # 循环输入
 while True:
     # 提示符
-    prompt = "\033[1;36;40mJekina \033[0m" + "\033[1;44m " + curr_path_name + " \033[0m >> "
+    prompt = "\033[1;36;40mJekina \033[0m" + "\033[1;44m " + curr_path_id + " \033[0m >> "
     user_input = input(prompt)
     user_input_split = user_input.split()
     # 处理空输入
@@ -66,39 +55,51 @@ while True:
     
     # 查看当前路径
     elif user_input_split[0] == 'pwd':
-        print("\033[1;32mwsl path:\t\033[0m" + tar_wslpath_base)
-        print("\033[1;32mjekyll path:\t\033[0m" + jekpath_base + '\n')
+        print("\033[1;32mwsl path:\033[0m\t" + curr_path)
+        print("\033[1;32mjekyll path:\033[0m\t" +  jek_path + '\n')
     
     # 在Windows资源管理器中打开当前文件夹
     elif user_input_split[0] == 'oie':
-        func.open_in_explorer(tar_wslpath_base)
+        # debug
+        print(curr_path)
+        func.open_in_explorer(curr_path)
     
     # 查看当前目录下的文件
     elif user_input_split[0] == 'ls':
-        os.system("ls -hs1 " + tar_wslpath_base)
+        if not os.path.exists(curr_path):
+            os.makedirs(curr_path)
+        os.system("ls -hs1 " + curr_path)
 
     # 从剪切板保存
     elif user_input_split[0] == 'clip':
-        func.save_from_clip(tar_wslpath_base, jekpath_base, args)
+        func.save_from_clip(curr_path_id, settings, args, formated_time)
     
     # 切换目录
     elif user_input_split[0] == "cd": 
         if len(user_input_split) == 2:
-            r1, r2, r3 = func.change_directory(user_input_split, settings)
-            if r1 and r2 and r3:
-                tar_wslpath_base, jekpath_base, curr_path_name = r1, r2, r3
+            ret = func.change_directory(user_input_split, settings)
+            if ret:
+                curr_path_id = ret
+                curr_path = jekyll_home + asset_paths[curr_path_id] + formated_time + "/"
+                jek_path = "/" + asset_paths[curr_path_id] + formated_time + "/"
 
     # 当前目录下删除文件
     elif user_input_split[0] == "rm":
         if len(user_input_split) == 2: 
-            command_rm = "rm " + tar_wslpath_base + user_input_split[1]
+            command_rm = "rm " + curr_path + user_input_split[1]
             os.system(command_rm)
 
     # 查找文章
     elif user_input_split[0] == "find":
+        search_string = user_input_split[1]
         if len(user_input_split) == 2:
-            func.search_articles(site_base_path, site_post_path, user_input_split[1])
+            func.search_articles(settings, search_string)
+
+    # 查看所有路径
+    elif user_input_split[0] == "sps":
+        for path_id in asset_paths.keys():
+            print("\033[1;32m" + path_id + ":\033[0m\t" + asset_paths[path_id])
 
     # 从Windows路径保存
     else:
-        func.save_from_winpath(tar_wslpath_base, jekpath_base, args, user_input)
+        func.save_from_winpath(user_input, curr_path_id, settings, args, formated_time)
