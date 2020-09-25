@@ -3,6 +3,8 @@
 
 jekina是以方便jekyll博客撰写为目的开发的实用脚本工具
 
+这是一个冲突
+
 功能介绍视频请前往[我的博客](http://reina.link/posts/jekina-readme/index.html)
 
 ## 二、 安装
