@@ -1,7 +1,7 @@
 # jekina (on wsl)
 ## 一、 简介
 
-jekina是以方便jekyll博客撰写为目的开发的实用脚本工具
+tututuutuutu
 
 不使用图床的情况下, 不妨使用jekina在本地保存博客中的图片
 
